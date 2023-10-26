@@ -381,7 +381,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         setEnabled(false);
 
         // Send startup Gcode
-        sendGcode(getCommand(null, CommandType.CONNECT_COMMAND));
+        sendGcode_Ex(getCommand(null, CommandType.CONNECT_COMMAND), 200);
 
         connected = true;
     }
@@ -409,11 +409,11 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
             if (enabled) {
                 // Assume a freshly re-enabled machine has no pending moves anymore.
                 motionPending = false;
-                sendGcode(getCommand(null, CommandType.ENABLE_COMMAND));
+                sendGcode_Ex(getCommand(null, CommandType.ENABLE_COMMAND), 200);
             }
             else {
                 try {
-                    sendGcode(getCommand(null, CommandType.DISABLE_COMMAND));
+                    sendGcode_Ex(getCommand(null, CommandType.DISABLE_COMMAND), 200);
                     drainCommandQueue(getTimeoutAtMachineSpeed());
                 }
                 catch (Exception e) {
@@ -507,7 +507,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         }
 
         long timeout = -1;
-        sendGcode(command, timeout, 0);
+        sendGcode_Ex(command, timeout, 0);
 
         // Check home complete response against user's regex
         String homeCompleteRegex = getCommand(null, CommandType.HOME_COMPLETE_REGEX);
@@ -583,7 +583,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
             if (!isEmpty) {
                 // If no axes are included, the G92 command must not be executed, because it would otherwise reset all
                 // axes to zero in some controllers! 
-                sendGcode(command, -1, 0);
+                sendGcode_Ex(command, -1, 0);
             }
         }
         else {
@@ -600,7 +600,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
                 postVisionHomeCommand = substituteVariable(postVisionHomeCommand, "Y", 
                         axesLocation.getCoordinate(axisY, getUnits()));
                 // Execute the command
-                sendGcode(postVisionHomeCommand, -1, 0);
+                sendGcode_Ex(postVisionHomeCommand, -1, 0);
                 // Store the new current coordinate on the axis.
                 axisX.setDriverCoordinate(axesLocation.getCoordinate(axisX, getUnits()));
                 axisY.setDriverCoordinate(axesLocation.getCoordinate(axisY, getUnits()));
@@ -621,7 +621,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
 
         // TODO: true queued reporting. For now it is sufficient to poll one for one.
         reportedLocationsQueue.clear();
-        sendGcode(command, -1, 0);
+        sendGcode_Ex(command, -1, 0);
         if (timeout == -1) {
             timeout = infinityTimeoutMilliseconds;
         }
@@ -804,7 +804,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
                     String preMoveCommand = ((ReferenceControllerAxis) axis).getPreMoveCommand();
                     if (preMoveCommand != null && !preMoveCommand.isEmpty()) {
                         preMoveCommand = substituteVariable(preMoveCommand, "Coordinate", previousCoordinate);
-                        sendGcode(preMoveCommand);
+                        sendGcode_Ex(preMoveCommand, 0);
                     }
                 }
                 // Axis specific jerk limits are needed on TinyG.
@@ -830,7 +830,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         if (doesMove) {
             // We do actually send the command.
             motionPending = true;
-            sendGcode(command);
+            sendGcode_Ex(command, 0);
         }
     }
 
@@ -852,7 +852,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         }
         String command = getCommand(hm, CommandType.MOVE_TO_COMPLETE_COMMAND);
         if (command != null) {
-            sendGcode(command, completionType == CompletionType.WaitForStillstandIndefinitely ?
+            sendGcode_Ex(command, completionType == CompletionType.WaitForStillstandIndefinitely ?
                     -1 : getTimeoutAtMachineSpeed(), 0);
         }
 
@@ -903,7 +903,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         command = substituteVariable(command, "BooleanValue", on);
         command = substituteVariable(command, "True", on ? on : null);
         command = substituteVariable(command, "False", on ? null : on);
-        sendGcode(command);
+        sendGcode_Ex(command, 200);
         SimulationModeMachine.simulateActuate(actuator, on, true);
     }
 
@@ -917,7 +917,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         }
         command = substituteVariable(command, "DoubleValue", value);
         command = substituteVariable(command, "IntegerValue", (int) value);
-        sendGcode(command);
+        sendGcode_Ex(command, 200);
         SimulationModeMachine.simulateActuate(actuator, value, true);
     }
 
@@ -930,7 +930,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
             command = substituteVariable(command, "Index", ((ReferenceActuator)actuator).getIndex());
         }
         command = substituteVariable(command, "StringValue", value);
-        sendGcode(command);
+        sendGcode_Ex(command, 200);
     }
 
     @Override
@@ -957,7 +957,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
 
                 command = substituteVariable(command, "Value", parameter);
             }
-            sendGcode(command);
+            sendGcode_Ex(command, 200);
             List<Line> responses = receiveResponses(regex, timeoutMilliseconds, (r) -> {
                 throw new Exception(String.format("Actuator \"%s\" read error: No matching responses found.", actuator.getName()));
             });
@@ -1028,8 +1028,8 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         super.close();
     }
 
-    protected void sendGcode(String gCode) throws Exception {
-        sendGcode(gCode, timeoutMilliseconds, 0);
+    protected void sendGcode_Ex(String gCode, long time_sleep_before_send) throws Exception {
+        sendGcode_Ex(gCode, timeoutMilliseconds, time_sleep_before_send);
     }
 
     protected long getTimeoutAtMachineSpeed() {
@@ -1038,7 +1038,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
                 : Math.round(timeoutMilliseconds/Math.max(0.05, Configuration.get().getMachine().getSpeed()));
     }
 
-    protected void sendGcode(String gCode, long timeout, long time_sleep_before_send) throws Exception {
+    protected void sendGcode_Ex(String gCode, long timeout, long time_sleep_before_send) throws Exception {
         if (gCode == null) {
             return;
         }
@@ -1063,6 +1063,10 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         }
 
         Logger.debug("[{}] >> {}, {}, {}", getCommunications().getConnectionName(), command, timeout, time_sleep_before_send);
+        if (command == "M610N3")
+        {
+            Logger.debug("bp");
+        }
         if (time_sleep_before_send > 0)
         {
             Thread.sleep(time_sleep_before_send);

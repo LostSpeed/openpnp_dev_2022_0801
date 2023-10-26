@@ -122,6 +122,18 @@ extends AbstractConfigurationWizard {
     private JTextField feedRetryCount;
     private JTextField pickRetryCount;
 
+    private void my_delay_ms(long ms)
+    {
+        try {
+            Thread.sleep(ms);
+        }
+        catch(InterruptedException e)
+        {
+            // nothing, only catch
+            // java: unreported exception java.lang.InterruptedException; must be caught or declared to be thrown
+        }
+    }
+
     public SlotSchultzFeederConfigurationWizard(SlotSchultzFeeder feeder) {
         this.feeder = feeder;
 
@@ -430,9 +442,18 @@ extends AbstractConfigurationWizard {
         panelActuator.add(statusText, "8, 20");
 
         if(Configuration.get().getMachine().isEnabled()){
+            // 命令不能并发, 下位机处理不过来.
+
+            my_delay_ms(300);
             getIdActuatorAction.actionPerformed(null);
+
+            my_delay_ms(300);
             getFeedCountActuatorAction.actionPerformed(null);
+
+            my_delay_ms(300);
             pitchActuatorAction.actionPerformed(null);
+
+            my_delay_ms(300);
             statusActuatorAction.actionPerformed(null);
         }
 
