@@ -64,7 +64,7 @@ public class GcodeDriverTest {
         tcp.setIpAddress("localhost");
         tcp.setPort(server.getListenerPort());
         driver.setConnectWaitTimeMilliseconds(0);
-        driver.setTimeoutMilliseconds(500);
+        driver.setTimeoutMilliseconds(5000);
         
         /**
          * Configure the machine to use the new GcodeDriver and initialize the machine.

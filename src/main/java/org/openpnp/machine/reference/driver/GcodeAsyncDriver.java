@@ -298,7 +298,7 @@ public class GcodeAsyncDriver extends GcodeDriver {
      * So it MUST NOT call super.sendCommand()
      */
     @Override
-    public void sendCommand(String command, long timeout) throws Exception {
+    public void sendCommand(String command, long timeout, long time_sleep_before_send) throws Exception {
         if (waitedForCommands) {
             // We had a wait for commands and caller had the last chance to receive responses.
             waitedForCommands = false;
@@ -311,6 +311,11 @@ public class GcodeAsyncDriver extends GcodeDriver {
         }
 
         Logger.debug("{} commandQueue.offer({}, {})...", getCommunications().getConnectionName(), command, timeout);
+        if (time_sleep_before_send > 0)
+        {
+            Thread.sleep(time_sleep_before_send);
+        }
+
         command = preProcessCommand(command);
         if (command.isEmpty()) {
             Logger.debug("{} empty command after pre process", getCommunications().getConnectionName());

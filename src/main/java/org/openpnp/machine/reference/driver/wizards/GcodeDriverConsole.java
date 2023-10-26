@@ -180,7 +180,7 @@ public class GcodeDriverConsole extends AbstractConfigurationWizard {
                 textAreaConsole.append(line.getLine() + "\n");
             }
             // Send the command.
-            driver.sendCommand(cmd, 5000);
+            driver.sendCommand(cmd, 5000, 300);
             // display the command in the console
             textAreaConsole.append("> " + cmd + "\n");
             for (GcodeDriver.Line line : driver.receiveResponses(driver.getCommand(null, CommandType.COMMAND_CONFIRM_REGEX), driver.getTimeoutMilliseconds(), 

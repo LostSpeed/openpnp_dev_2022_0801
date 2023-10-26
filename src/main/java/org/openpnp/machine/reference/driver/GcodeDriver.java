@@ -507,7 +507,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         }
 
         long timeout = -1;
-        sendGcode(command, timeout);
+        sendGcode(command, timeout, 0);
 
         // Check home complete response against user's regex
         String homeCompleteRegex = getCommand(null, CommandType.HOME_COMPLETE_REGEX);
@@ -583,7 +583,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
             if (!isEmpty) {
                 // If no axes are included, the G92 command must not be executed, because it would otherwise reset all
                 // axes to zero in some controllers! 
-                sendGcode(command, -1);
+                sendGcode(command, -1, 0);
             }
         }
         else {
@@ -600,7 +600,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
                 postVisionHomeCommand = substituteVariable(postVisionHomeCommand, "Y", 
                         axesLocation.getCoordinate(axisY, getUnits()));
                 // Execute the command
-                sendGcode(postVisionHomeCommand, -1);
+                sendGcode(postVisionHomeCommand, -1, 0);
                 // Store the new current coordinate on the axis.
                 axisX.setDriverCoordinate(axesLocation.getCoordinate(axisX, getUnits()));
                 axisY.setDriverCoordinate(axesLocation.getCoordinate(axisY, getUnits()));
@@ -621,7 +621,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
 
         // TODO: true queued reporting. For now it is sufficient to poll one for one.
         reportedLocationsQueue.clear();
-        sendGcode(command, -1);
+        sendGcode(command, -1, 0);
         if (timeout == -1) {
             timeout = infinityTimeoutMilliseconds;
         }
@@ -853,7 +853,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
         String command = getCommand(hm, CommandType.MOVE_TO_COMPLETE_COMMAND);
         if (command != null) {
             sendGcode(command, completionType == CompletionType.WaitForStillstandIndefinitely ?
-                    -1 : getTimeoutAtMachineSpeed());
+                    -1 : getTimeoutAtMachineSpeed(), 0);
         }
 
         if (completionType.isEnforcingStillstand()) {
@@ -1029,7 +1029,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
     }
 
     protected void sendGcode(String gCode) throws Exception {
-        sendGcode(gCode, timeoutMilliseconds);
+        sendGcode(gCode, timeoutMilliseconds, 0);
     }
 
     protected long getTimeoutAtMachineSpeed() {
@@ -1038,7 +1038,7 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
                 : Math.round(timeoutMilliseconds/Math.max(0.05, Configuration.get().getMachine().getSpeed()));
     }
 
-    protected void sendGcode(String gCode, long timeout) throws Exception {
+    protected void sendGcode(String gCode, long timeout, long time_sleep_before_send) throws Exception {
         if (gCode == null) {
             return;
         }
@@ -1047,22 +1047,27 @@ public class GcodeDriver extends AbstractReferenceDriver implements Named {
             if (command.length() == 0) {
                 continue;
             }
-            sendCommand(command, timeout);
+            sendCommand(command, timeout, time_sleep_before_send);
         }
     }
 
     public void sendCommand(String command) throws Exception {
-        sendCommand(command, timeoutMilliseconds);
+        sendCommand(command, timeoutMilliseconds, 0);
     }
 
-    public void sendCommand(String command, long timeout) throws Exception {
+    public void sendCommand(String command, long timeout, long time_sleep_before_send) throws Exception {
         // An error may have popped up in the meantime. Check and bail on it, before sending the next command. 
         bailOnError();
         if (command == null) {
             return;
         }
 
-        Logger.debug("[{}] >> {}, {}", getCommunications().getConnectionName(), command, timeout);
+        Logger.debug("[{}] >> {}, {}, {}", getCommunications().getConnectionName(), command, timeout, time_sleep_before_send);
+        if (time_sleep_before_send > 0)
+        {
+            Thread.sleep(time_sleep_before_send);
+        }
+
         command = preProcessCommand(command);
         if (command.isEmpty()) {
             Logger.debug("{} empty command after pre process", getCommunications().getConnectionName());
