@@ -291,7 +291,7 @@ extends AbstractConfigurationWizard {
         feederPanel.add(lblPart, "2, 6, right, default");
 
         feederPartCb = new JComboBox();
-        feederPanel.add(feederPartCb, "4, 6, 3, 1");
+        feederPanel.add(feederPartCb, "4, 6, 9, 1"); // 增加飞达对应元件的显示名称的下拉列表框宽度, param3 is w
         feederPartCb.setModel(new PartsComboBoxModel());
         feederPartCb.setRenderer(new IdentifiableListCellRenderer<Part>());
 
@@ -299,7 +299,8 @@ extends AbstractConfigurationWizard {
         panelActuator.setBorder(new TitledBorder(null,
                 "Actuators", TitledBorder.LEADING, TitledBorder.TOP, null));
         contentPanel.add(panelActuator);
-        panelActuator.setLayout(new FormLayout(new ColumnSpec[] {
+        // 定义子面板布局的坐标行列数, 元素放置都是根据几行几列作为位置来放的.
+        FormLayout fl_panelActuator = new FormLayout(new ColumnSpec[] {
                 FormSpecs.RELATED_GAP_COLSPEC,
                 FormSpecs.DEFAULT_COLSPEC,
                 FormSpecs.RELATED_GAP_COLSPEC,
@@ -309,7 +310,8 @@ extends AbstractConfigurationWizard {
                 FormSpecs.RELATED_GAP_COLSPEC,
                 FormSpecs.DEFAULT_COLSPEC,
                 FormSpecs.RELATED_GAP_COLSPEC,
-                FormSpecs.DEFAULT_COLSPEC,},
+				FormSpecs.DEFAULT_COLSPEC
+        },
                 new RowSpec[] {
                         FormSpecs.RELATED_GAP_ROWSPEC,
                         FormSpecs.DEFAULT_ROWSPEC,
@@ -330,7 +332,9 @@ extends AbstractConfigurationWizard {
                         FormSpecs.RELATED_GAP_ROWSPEC,
                         FormSpecs.DEFAULT_ROWSPEC,
                         FormSpecs.RELATED_GAP_ROWSPEC,
-                        FormSpecs.DEFAULT_ROWSPEC,}));
+                        FormSpecs.DEFAULT_ROWSPEC});
+        fl_panelActuator.setColumnGroups(new int[][]{new int[]{4, 6, 8, 10}});
+        panelActuator.setLayout(fl_panelActuator);
 
         JLabel lblActuatorValue = new JLabel("Feeder Number:");
         panelActuator.add(lblActuatorValue, "4, 2, right, default");
@@ -342,6 +346,7 @@ extends AbstractConfigurationWizard {
         JLabel lblActuator = new JLabel("Actuator");
         panelActuator.add(lblActuator, "4, 4, left, default");
 
+        // get id 那行的UI元素
         JLabel lblGetID = new JLabel("Get ID");
         panelActuator.add(lblGetID, "2, 6, right, default");
 
@@ -356,6 +361,7 @@ extends AbstractConfigurationWizard {
         idText.setColumns(10);
         panelActuator.add(idText, "8, 6");
 
+        // pre pick 那行的UI元素
         JLabel lblFeed = new JLabel("Pre Pick");
         panelActuator.add(lblFeed, "2, 8, right, default");
 
@@ -505,7 +511,9 @@ extends AbstractConfigurationWizard {
         whateverPanel.add(lblFiducialPart, "2, 8, right, default");
 
         fiducialPartTf = new JTextField();
-        whateverPanel.add(fiducialPartTf, "4, 8, 3, 1");
+
+        // 参数2字符串为 "x, y, w, h", 增加w, 就是增加文本输入框的宽度
+        whateverPanel.add(fiducialPartTf, "4, 8, 8, 1"); // 增加飞达基准孔部件名称文本框的宽度, 参数3改大了.
         fiducialPartTf.addActionListener(e -> {
             feeder.setFiducialPart(fiducialPartTf.getText());
         });
