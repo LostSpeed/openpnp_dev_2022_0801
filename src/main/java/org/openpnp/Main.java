@@ -53,7 +53,7 @@ public class Main {
     public static String getVersion() {
         String version = Main.class.getPackage().getImplementationVersion();
         if (version == null) {
-            version = "INTERNAL BUILD - base 2022-8-1 last, ls 2023_1026_0608PM";
+            version = "INTERNAL BUILD - base 2022-8-1 last, ls 2023_1027_1120PM";
         }
         return version;
     }
