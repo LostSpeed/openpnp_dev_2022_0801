@@ -1,6 +1,17 @@
 This file lists major or notable changes to OpenPnP in chronological order. This is not
 a complete change list, only those that may directly interest or affect users.
 
+# 2023_1029
+* 更新版本号.
+* 更新工程文档说明.
+
+# 2023_1027
+* 修改飞达信息中显示不全的地方.
+
+# 2023_1026
+* 发送命令前, 增加一个参数(发送命令前的sleep时间), 防止下位机处理不过来.
+* 解决action并发问题.
+
 # 2022-06-10
 
 ## ReferenceStripFeeder Rotation in Tape
