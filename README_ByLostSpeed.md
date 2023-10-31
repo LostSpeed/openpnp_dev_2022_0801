@@ -12,6 +12,8 @@
 
 ## 工程更新笔记
 
+[openpnp - code review - 开机对话框历史记录和贡献者名单](https://lostspeed.blog.csdn.net/article/details/134135366)
+
 [openpnp - SlotSchultzFeeder source code bugfix](https://lostspeed.blog.csdn.net/article/details/134066090)
 
 [openpnp - modify source code - SlotSchultzFeederConfigurationWizard](https://lostspeed.blog.csdn.net/article/details/134085711)
